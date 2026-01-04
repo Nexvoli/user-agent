@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean UA Generator (Latest 2025)</title>
+    <style>
+        :root { --main: #00ffcc; --bg: #000000; --panel: #111; --text: #fff; --border: #333; }
+        body { font-family: 'Segoe UI', monospace; background: var(--bg); color: var(--text); padding: 20px; font-size: 14px; }
+        .container { max-width: 950px; margin: 0 auto; background: var(--panel); padding: 30px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 0 20px rgba(0, 255, 204, 0.15); }
+        
+        h2 { color: var(--main); text-align: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; text-transform: uppercase; letter-spacing: 1.5px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 25px; }
+        
+        label { display: block; color: #888; margin-bottom: 8px; font-weight: bold; font-size: 12px; text-transform: uppercase; }
+        select, input { width: 100%; padding: 14px; background: #1a1a1a; border: 1px solid #444; color: #fff; border-radius: 6px; font-family: inherit; font-size: 14px; }
+        select:focus, input:focus { border-color: var(--main); outline: none; }
+        
+        button { width: 100%; padding: 18px; margin-top: 30px; background: var(--main); color: #000; font-weight: bold; border: none; cursor: pointer; font-size: 16px; border-radius: 6px; text-transform: uppercase; transition: 0.3s; }
+        button:hover { background: #00dbaf; }
+
+        textarea { width: 100%; height: 500px; background: #080808; color: #00ffcc; border: 1px solid var(--border); padding: 20px; border-radius: 8px; margin-top: 25px; font-family: 'Consolas', monospace; white-space: pre; overflow: auto; font-size: 13px; line-height: 1.6; }
+    
+/* ===== FORCE BUG FIX (UI ONLY) ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.container {
+  max-width: 1100px !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+.grid > div {
+  min-width: 0 !important;
+}
+
+select, input {
+  max-width: 100% !important;
+}
+
+textarea {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 10px !important;
+  }
+  .container {
+    padding: 20px 15px !important;
+  }
+  textarea {
+    height: 300px !important;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>💻ᴅᴇᴠᴇʟᴏᴘᴇᴅ ʙʏ ᴀᴋᴀꜱʜ💻<span style="font-size:0.6em; background:#ff0055; color:white; padding:2px 6px; border-radius:3px;">UA GENERATOR</span></h2>
+
+    <div class="grid">
+        <div>
+            <label>1. OS Platform</label>
+            <select id="osSelect" onchange="updateBrandList()">
+                <option value="android">Android</option>
+                <option value="ios">iOS (iPhone/iPad)</option>
+                <option value="windows">Windows (PC)</option>
+                <option value="mac">macOS (Mac)</option>
+            </select>
+        </div>
+
+        <div id="brandDiv">
+            <label>2. Brand (Mix 2020-2025)</label>
+            <select id="brandSelect">
+                </select>
+        </div>
+
+        <div>
+            <label>3. Environment Type</label>
+            <select id="typeSelect" onchange="updateAppList()">
+                <option value="browser">Web Browser</option>
+                <option value="app">Social App</option>
+            </select>
+        </div>
+
+        <div>
+            <label>4. Select Browser/App</label>
+            <select id="browserSelect" onchange="autoFillVersion()"></select>
+        </div>
+
+        <div>
+            <label>5. Version (Latest Auto-Filled)</label>
+            <input type="text" id="versionInput" placeholder="Version...">
+        </div>
+
+        <div>
+            <label>6. Country & Language</label>
+            <select id="langSelect">
+                <option value="en-US">United States</option>
+                <option value="en-GB">United Kingdom</option>
+                <option value="en-AU">Australia</option>
+                <option value="de-DE">Germany</option>
+                <option value="fr-FR">France</option>
+                <option value="bn-BD">Bangladesh</option>
+            </select>
+        </div>
+
+        <div style="grid-column: span 2;">
+            <label>7. Quantity</label>
+            <input type="number" id="qty" value="10" min="1" max="5000">
+        </div>
+    </div>
+
+    <button onclick="generate()">⚡ Generate Clean Strings</button>
+    <textarea id="output" readonly placeholder="Mozilla/5.0..."></textarea>
+</div>
+
+<script>
+    // ==========================================
+    // 📂 1. MASSIVE DATABASE (2020-2025 ALL MODELS)
+    // ==========================================
+    const db = {
+        android: {
+            "Samsung": [
+                // 2025 (Android 15/16)
+                { model: "SM-S938B", ver: "16", prefix: "BP1A" }, // S25 Ultra Future
+                { model: "SM-S931B", ver: "15", prefix: "AP3A" }, // S25
+                { model: "SM-S936B", ver: "15", prefix: "AP3A" }, // S25+
+                { model: "SM-S931U", ver: "15", prefix: "AP3A" }, // S25 US
+                // 2024
+                { model: "SM-S928B", ver: "14", prefix: "UP1A" }, // S24 Ultra
+                { model: "SM-S921B", ver: "14", prefix: "UP1A" },
+                { model: "SM-F956B", ver: "14", prefix: "UP1A" }, // Fold 6
+                { model: "SM-A556B", ver: "14", prefix: "UP1A" }, // A55
+                // 2023
+                { model: "SM-S918B", ver: "13", prefix: "TP1A" }, // S23 Ultra
+                { model: "SM-S911B", ver: "13", prefix: "TP1A" },
+                // 2022
+                { model: "SM-S908B", ver: "13", prefix: "TP1A" }, // S22 Ultra (Updated OS)
+                { model: "SM-S901B", ver: "12", prefix: "SP1A" },
+                // 2021
+                { model: "SM-G998B", ver: "12", prefix: "SP1A" }, // S21 Ultra
+                // 2020
+                { model: "SM-G988B", ver: "11", prefix: "RP1A" }  // S20 Ultra
+            ],
+            "Google Pixel": [
+                // 2025
+                { model: "Pixel 10 Pro", ver: "16", prefix: "BP1A" },
+                { model: "Pixel 9 Pro XL", ver: "15", prefix: "AP4A" },
+                // 2024
+                { model: "Pixel 9 Pro", ver: "14", prefix: "AD1A" },
+                { model: "Pixel 9", ver: "14", prefix: "AD1A" },
+                // 2023
+                { model: "Pixel 8 Pro", ver: "14", prefix: "UD1A" },
+                { model: "Pixel 8", ver: "14", prefix: "UD1A" },
+                // 2022
+                { model: "Pixel 7 Pro", ver: "13", prefix: "TQ1A" },
+                // 2021
+                { model: "Pixel 6 Pro", ver: "12", prefix: "SQ1A" },
+                // 2020
+                { model: "Pixel 5", ver: "11", prefix: "RQ1A" }
+            ],
+            "Motorola": [
+                // 2025
+                { model: "moto g - 2025", ver: "15", prefix: "V1VK35" },
+                // 2024
+                { model: "motorola razr 50 ultra", ver: "14", prefix: "U3UX34" },
+                { model: "moto g stylus 5G - 2024", ver: "14", prefix: "U2UB34" },
+                // 2023
+                { model: "motorola edge 40 pro", ver: "13", prefix: "T1TR33" },
+                // 2022
+                { model: "moto g stylus 5G (2022)", ver: "12", prefix: "S1A" },
+                // 2020
+                { model: "motorola edge+", ver: "11", prefix: "R1A" }
+            ],
+            "OnePlus": [
+                // 2025
+                { model: "CPH2619", ver: "16", prefix: "VKQ1" }, // OnePlus 13
+                // 2024
+                { model: "CPH2581", ver: "14", prefix: "UKQ1" }, // OnePlus 12
+                // 2023
+                { model: "CPH2447", ver: "13", prefix: "TKQ1" }, // OnePlus 11
+                // 2022
+                { model: "NE2213", ver: "12", prefix: "SKQ1" }, // OnePlus 10 Pro
+                // 2020
+                { model: "IN2023", ver: "11", prefix: "RKQ1" } // OnePlus 8 Pro
+            ]
+        },
+        ios: {
+            "Apple": [
+                // 2025 (iOS 18/19)
+                { model: "iPhone17,2", os: "19_0" }, // iPhone 17 Pro Max (Projected)
+                { model: "iPhone17,1", os: "18_3" }, // iPhone 16 Pro
+                { model: "iPhone17,5", os: "18_3" }, // iPhone 16e
+                // 2024
+                { model: "iPhone16,2", os: "18_1" }, // iPhone 15 Pro Max (Updated OS)
+                // 2023
+                { model: "iPhone16,2", os: "17_5" },
+                { model: "iPhone16,1", os: "17_5" },
+                // 2022
+                { model: "iPhone15,3", os: "16_6" },
+                { model: "iPhone14,7", os: "16_6" },
+                // 2021
+                { model: "iPhone14,3", os: "15_6" },
+                // 2020
+                { model: "iPhone13,4", os: "14_8" }
+            ]
+        },
+        windows: {
+            "Windows": [
+                { platform: "Windows NT 10.0; Win64; x64" }
+            ]
+        },
+        mac: {
+            "Mac": [
+                { platform: "Macintosh; Intel Mac OS X 10_15_7" }, // Sequoia/Standard
+                { platform: "Macintosh; Intel Mac OS X 14_2_1" }  // Sonoma
+            ]
+        }
+    };
+
+    // ==========================================
+    // ⚙️ 2. VERSIONS (YOUR SPECIFIC REQUESTS)
+    // ==========================================
+    const latestData = {
+        browsers: {
+            "Chrome": "142.0.7499.146", // From your latest request
+            "Firefox": "146.0.1",
+            "Edge": "143.0.3650.80",
+            "Safari": "26.0" // Late 2025
+        },
+        apps: {
+            "Facebook": "542.0.0.47.151",
+            "Instagram": "410.1.0.63.71",
+            "Twitter": "10.74.0",
+            "TikTok": "38.5.3",
+            "WhatsApp": "2.25.1.76",
+            "Snapchat": "13.10.0.34"
+        }
+    };
+
+    // ==========================================
+    // ⚙️ UI LOGIC
+    // ==========================================
+
+    function updateBrandList() {
+        const os = document.getElementById("osSelect").value;
+        const brandSelect = document.getElementById("brandSelect");
+        const brandDiv = document.getElementById("brandDiv");
+
+        brandSelect.innerHTML = "";
+
+        if (os === "android") {
+            brandDiv.style.display = "block";
+            Object.keys(db.android).forEach(brand => brandSelect.add(new Option(brand, brand)));
+        } else if (os === "ios") {
+            brandDiv.style.display = "block";
+            brandSelect.add(new Option("Apple", "Apple"));
+        } else if (os === "windows") {
+            brandDiv.style.display = "block";
+            brandSelect.add(new Option("Microsoft", "Windows"));
+        } else if (os === "mac") {
+            brandDiv.style.display = "block";
+            brandSelect.add(new Option("Apple", "Mac"));
+        }
+        updateAppList();
+    }
+
+    function updateAppList() {
+        const type = document.getElementById("typeSelect").value;
+        const browserSelect = document.getElementById("browserSelect");
+        const os = document.getElementById("osSelect").value;
+        browserSelect.innerHTML = "";
+        
+        if (type === "browser") {
+            let list = (os === "android") ? ["Chrome", "Firefox", "Edge"] : (os === "ios") ? ["Safari", "Chrome", "Firefox"] : ["Chrome", "Firefox", "Edge", "Safari"];
+            list.forEach(b => browserSelect.add(new Option(b, b)));
+        } else {
+            ["Facebook", "Instagram", "Twitter", "TikTok", "WhatsApp", "Snapchat"].forEach(app => browserSelect.add(new Option(app, app)));
+        }
+        autoFillVersion();
+    }
+
+    function autoFillVersion() {
+        const type = document.getElementById("typeSelect").value;
+        const selection = document.getElementById("browserSelect").value;
+        const input = document.getElementById("versionInput");
+        
+        if (type === "browser") {
+            input.value = latestData.browsers[selection] || "1.0.0";
+        } else {
+            input.value = latestData.apps[selection] || "1.0.0";
+        }
+    }
+
+    // ==========================================
+    // 🚀 GENERATOR LOGIC (CLEAN OUTPUT)
+    // ==========================================
+
+    function generate() {
+        const os = document.getElementById("osSelect").value;
+        const brand = document.getElementById("brandSelect").value;
+        const type = document.getElementById("typeSelect").value;
+        const selection = document.getElementById("browserSelect").value;
+        const version = document.getElementById("versionInput").value;
+        const lang = document.getElementById("langSelect").value;
+        const qty = parseInt(document.getElementById("qty").value);
+        const langCode = lang.replace("-", "_");
+
+        let output = "";
+        let pool = [];
+
+        // Fetch Correct Database
+        if (os === "android") pool = db.android[brand];
+        else if (os === "ios") pool = db.ios["Apple"];
+        else if (os === "windows") pool = db.windows["Windows"];
+        else if (os === "mac") pool = db.mac["Mac"];
+
+        if (!pool || pool.length === 0) {
+            document.getElementById("output").value = "No devices found.";
+            return;
+        }
+
+        const chromeVer = latestData.browsers.Chrome;
+
+        for (let i = 0; i < qty; i++) {
+            const dev = pool[Math.floor(Math.random() * pool.length)];
+            let ua = "";
+
+            // --- ANDROID ---
+            if (os === "android") {
+                const dateCode = "2" + Math.floor(Math.random() * 6) + "0905"; // 20-25 random date
+                const buildID = `${dev.prefix}.${dateCode}.${Math.floor(Math.random()*999)}`;
+                
+                // Base
+                let baseUA = `Mozilla/5.0 (Linux; Android ${dev.ver}; ${dev.model} Build/${buildID}`;
+                
+                if (type === "app") {
+                    baseUA += `; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/${chromeVer} Mobile Safari/537.36`;
+                    if (selection === "Facebook") ua = baseUA + ` [FB_IAB/FB4A;FBAV/${version};FBLC/${langCode};FBDV/${dev.model};FBMF/${brand};FBBD/${brand};]`;
+                    else if (selection === "Instagram") ua = baseUA + ` Instagram ${version} Android (${dev.ver}/34; 480dpi; 1080x2400; ${brand}; ${dev.model}; ${langCode}; 12345)`;
+                    else ua = baseUA + ` ${selection}/${version}`;
+                } else {
+                    // Browser
+                    ua = baseUA + `) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${version} Mobile Safari/537.36`;
+                    if (selection === "Edge") ua += ` EdgA/${version}`;
+                    if (selection === "Firefox") ua = `Mozilla/5.0 (Android ${dev.ver}; Mobile; rv:${version}) Gecko/${version} Firefox/${version}`;
+                }
+            } 
+            
+            // --- iOS ---
+            else if (os === "ios") {
+                const osStr = dev.os.replace(/_/g, "_");
+                let baseUA = `Mozilla/5.0 (${dev.model}; CPU iPhone OS ${osStr} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)`;
+
+                if (type === "app") {
+                    let appSuffix = "";
+                    if (selection === "Facebook") appSuffix = ` [FBAN/FBAOS;FBAV/${version};FBLC/${langCode};FBDV/${dev.model};]`;
+                    else if (selection === "Instagram") appSuffix = ` Instagram ${version} (iPhone; CPU iPhone OS ${osStr} like Mac OS X; ${langCode};)`;
+                    else appSuffix = ` ${selection}/${version}`;
+                    ua = baseUA + ` Mobile/15E148` + appSuffix;
+                } else {
+                    if (selection === "Safari") ua = baseUA + ` Version/${version} Mobile/15E148 Safari/604.1`;
+                    else if (selection === "Chrome") ua = baseUA + ` CriOS/${version} Mobile/15E148 Safari/604.1`;
+                    else if (selection === "Firefox") ua = baseUA + ` FxiOS/${version} Mobile/15E148 Safari/604.1`;
+                }
+            } 
+            
+            // --- WINDOWS ---
+            else if (os === "windows") {
+                 ua = `Mozilla/5.0 (${dev.platform}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${version} Safari/537.36`;
+                 if (selection === "Edge") ua += ` Edg/${version}`;
+                 if (selection === "Firefox") ua = `Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:${version}) Gecko/20100101 Firefox/${version}`;
+            }
+
+            // --- MAC ---
+            else if (os === "mac") {
+                 ua = `Mozilla/5.0 (${dev.platform}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${version} Safari/537.36`;
+                 if (selection === "Safari") ua = `Mozilla/5.0 (${dev.platform}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${version} Safari/605.1.15`;
+            }
+
+            // CLEAN OUTPUT: ONLY UA STRING
+            output += `${ua}\n`;
+        }
+
+        document.getElementById("output").value = output;
+    }
+
+    // Init
+    window.onload = function() { updateBrandList(); };
+</script>
+
+</body>
+</html>
